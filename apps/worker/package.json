@@ -1,0 +1,28 @@
+{
+  "name": "@togetherly/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.798.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.62.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",
+    "@opentelemetry/sdk-node": "^0.203.0",
+    "@prisma/client": "^6.7.0",
+    "@sentry/node": "^9.25.0",
+    "@togetherly/contracts": "workspace:*",
+    "@togetherly/media": "workspace:*",
+    "bullmq": "^5.52.2",
+    "ioredis": "^5.6.1",
+    "sharp": "^0.34.1"
+  },
+  "devDependencies": { "tsx": "^4.19.4", "typescript": "^5.8.3", "vitest": "^3.1.3" }
+}

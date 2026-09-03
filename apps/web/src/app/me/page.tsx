@@ -1,0 +1,1 @@
+export default function MePage(){return <div className="page"><span className="eyebrow">账号与隐私</span><h1 className="page-title">我的</h1><div className="panel"><h3>小满</h3><p className="subtle">demo@example.test</p></div><h2 className="section-title">数据与隐私</h2><div className="panel"><p>私人照片使用短时签名链接访问，私人感受不会分享给任何协作者。</p><button className="button secondary">导出我的数据</button></div></div>}

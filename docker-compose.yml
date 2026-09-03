@@ -1,0 +1,56 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: togetherly
+      POSTGRES_USER: togetherly
+      POSTGRES_PASSWORD: togetherly
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U togetherly"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    volumes:
+      - ./infra/minio-cors.xml:/config/cors.xml:ro
+    entrypoint: /bin/sh
+    command: >-
+      -c "until mc alias set local http://minio:9000 minio minio-secret; do sleep 1; done;
+      mc mb --ignore-existing local/togetherly-private;
+      mc anonymous set none local/togetherly-private;
+      mc version enable local/togetherly-private;
+      mc cors set local/togetherly-private /config/cors.xml"
+
+volumes:
+  postgres-data:
+  minio-data:

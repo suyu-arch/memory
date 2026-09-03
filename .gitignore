@@ -1,0 +1,17 @@
+node_modules/
+.pnpm-store/
+.turbo/
+dist/
+.next/
+out/
+.expo/
+coverage/
+*.log
+*.tsbuildinfo
+.env
+.env.local
+apps/api/prisma/*.db
+uploads/
+tmp/
+.DS_Store
+apps/web/public/demo/*.png

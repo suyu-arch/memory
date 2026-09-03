@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Memory",
+    "slug": "togetherly",
+    "scheme": "togetherly",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router", "expo-sqlite", ["expo-image-picker", { "photosPermission": "Memory 需要访问照片，帮你整理共同经历。" }]],
+    "ios": { "supportsTablet": true, "bundleIdentifier": "app.togetherly.mobile" },
+    "android": { "package": "app.togetherly.mobile", "adaptiveIcon": { "backgroundColor": "#F5F0E7" } },
+    "web": { "bundler": "metro" },
+    "experiments": { "typedRoutes": true }
+  }
+}

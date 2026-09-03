@@ -1,0 +1,32 @@
+{
+  "name": "@togetherly/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "build": "expo export --platform ios && expo export --platform android",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^14.1.0",
+    "@togetherly/contracts": "workspace:*",
+    "expo": "~53.0.27",
+    "expo-file-system": "~18.1.11",
+    "expo-image-picker": "~16.1.4",
+    "expo-router": "~5.1.11",
+    "expo-sqlite": "~15.2.14",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-native": "0.79.6",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.14",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.3"
+  }
+}

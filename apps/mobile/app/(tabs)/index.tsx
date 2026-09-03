@@ -1,0 +1,8 @@
+import { router } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Avatar, Card, Eyebrow, Page, Title } from '@/components';
+import { colors } from '@/theme';
+
+const memories=[['20','2026.08','夏夜散步和迟到的晚饭','苏州河 · 47 张照片'],['12','2026.06','下班后临时决定看电影','静安寺 · 16 张照片']];
+export default function Home(){return <Page><ScrollView showsVerticalScrollIndicator={false}><View style={s.hero}><Eyebrow>把相遇好好收起来</Eyebrow><Title>照片不用整理，{`\n`}回忆会自己长成故事。</Title><Text style={s.muted}>一次倒入所有照片，写下你的原话。</Text></View><Text style={s.section}>最近想起的人</Text><View style={s.people}>{['小林','阿杰','小雨'].map((name,index)=><View key={name} style={s.person}><Avatar name={name} tint={[colors.orange,'#648080','#8a8d59'][index]}/><Text>{name}</Text></View>)}</View><Text style={s.section}>最近的共同经历</Text>{memories.map(([day,date,title,meta],index)=><Card key={title} onPress={()=>router.push(`/encounter/${index?'movie':'summer-night'}`)}><View style={s.memory}><View><Text style={s.day}>{day}</Text><Text style={s.small}>{date}</Text></View><View style={{flex:1}}><Text style={s.memoryTitle}>{title}</Text><Text style={s.small}>{meta}</Text></View></View></Card>)}</ScrollView></Page>}
+const s=StyleSheet.create({hero:{backgroundColor:'#f0e5d2',borderRadius:28,padding:24,marginBottom:24},muted:{color:colors.muted,lineHeight:22},section:{fontSize:21,fontWeight:'700',color:colors.ink,marginVertical:16},people:{flexDirection:'row',gap:24},person:{alignItems:'center',gap:7},memory:{flexDirection:'row',gap:18,alignItems:'center'},day:{fontSize:29,fontWeight:'700'},small:{fontSize:12,color:colors.muted,marginTop:3},memoryTitle:{fontSize:16,fontWeight:'600',marginBottom:6}})
