@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Check, ChevronDown, Lightbulb, MapPin, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronDown, Lightbulb, MapPin, Pencil, Plus, RotateCcw, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { PersonSummary, TogetherIdea, TogetherIdeaStatus } from '@togetherly/contracts';
@@ -15,6 +15,7 @@ type Props = {
   people: PersonSummary[];
   personId?: string;
   compact?: boolean;
+  board?: boolean;
 };
 
 type Draft = {
@@ -28,10 +29,11 @@ type Draft = {
 
 const emptyDraft = (personId = ''): Draft => ({ personId, content: '', plannedAt: '', locationText: '', note: '' });
 
-export function TogetherIdeas({ people, personId, compact = false }: Props) {
+export function TogetherIdeas({ people, personId, compact = false, board = false }: Props) {
   const [ideas, setIdeas] = useState<TogetherIdea[]>([]);
   const [ready, setReady] = useState(false);
   const [editing, setEditing] = useState<Draft | null>(null);
+  const [statusFilter, setStatusFilter] = useState<TogetherIdeaStatus>('IDEA');
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -47,10 +49,11 @@ export function TogetherIdeas({ people, personId, compact = false }: Props) {
     }
   }, [personId]);
 
-  const visibleIdeas = useMemo(() => ideas
+  const scopedIdeas = useMemo(() => ideas
     .filter((idea) => !personId || idea.personId === personId)
-    .filter((idea) => idea.status !== 'DONE')
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)), [ideas, personId]);
+  const visibleIdeas = useMemo(() => scopedIdeas
+    .filter((idea) => board ? idea.status === statusFilter : idea.status !== 'DONE'), [board, scopedIdeas, statusFilter]);
 
   function saveLocal(nextIdeas: TogetherIdea[]) {
     setIdeas(nextIdeas);
@@ -103,13 +106,20 @@ export function TogetherIdeas({ people, personId, compact = false }: Props) {
 
   if (!ready) return <div className="ideas-loading">正在翻找你们的小念头…</div>;
 
-  return <section className={`together-ideas ${compact ? 'compact' : ''}`}>
+  return <section className={`together-ideas ${compact ? 'compact' : ''} ${board ? 'ideas-board' : ''}`}>
     <div className="ideas-heading">
-      <div><span className="eyebrow">NEXT TIME TOGETHER</span><h2 className="section-title">{personId ? '我们下次一起' : '下次一起'}</h2></div>
-      <button className="round-link ideas-add" type="button" onClick={() => setEditing(emptyDraft(personId ?? people[0]?.id))}><Plus size={16}/>记一个想法</button>
+      <div><span className="eyebrow">NEXT TIME TOGETHER</span><h2 className="section-title">{board ? '我们的清单' : personId ? '我们下次一起' : '下次一起'}</h2></div>
+      <div className="ideas-heading-actions">
+        {compact && <Link className="round-link ideas-view-all" href="/together">查看全部 <ArrowRight size={15}/></Link>}
+        <button className="round-link ideas-add" type="button" onClick={() => setEditing(emptyDraft(personId ?? people[0]?.id))}><Plus size={16}/>记一个想法</button>
+      </div>
     </div>
 
     {editing && <IdeaForm draft={editing} people={people} lockPerson={Boolean(personId)} onChange={setEditing} onCancel={() => setEditing(null)} onSubmit={saveDraft}/>} 
+
+    {board && <div className="idea-status-tabs" aria-label="筛选下次一起">
+      {(['IDEA', 'PLANNING', 'DONE'] as TogetherIdeaStatus[]).map((status) => <button className={statusFilter === status ? 'active' : ''} type="button" onClick={() => setStatusFilter(status)} key={status}><span>{statusLabel(status)}</span><b>{scopedIdeas.filter((idea) => idea.status === status).length}</b></button>)}
+    </div>}
 
     <div className="idea-list">
       {visibleIdeas.slice(0, compact ? 3 : undefined).map((idea, index) => {
@@ -117,7 +127,7 @@ export function TogetherIdeas({ people, personId, compact = false }: Props) {
         return <article className={`idea-card idea-${idea.status.toLowerCase()}`} key={idea.id}>
           {person ? <PersonAvatar personId={person.id} name={idea.personName} src={personPhoto(person, index)} className={`friend-photo-${index % 3 + 1}`}/> : <span className="idea-bulb"><Lightbulb size={21}/></span>}
           <div className="idea-copy">
-            <div className="idea-meta"><span>{idea.personName}</span><small>{idea.proposedBy}提出 · {idea.status === 'PLANNING' ? '安排中' : '一个念头'}</small></div>
+            <div className="idea-meta"><span>{idea.personName}</span><small>{idea.proposedBy}提出 · {statusLabel(idea.status)}</small></div>
             <strong>{idea.content}</strong>
             {(idea.plannedAt || idea.locationText) && <div className="idea-details">{idea.plannedAt && <span><CalendarDays size={13}/>{formatPlanDate(idea.plannedAt)}</span>}{idea.locationText && <span><MapPin size={13}/>{idea.locationText}</span>}</div>}
             {idea.note && <p>{idea.note}</p>}
@@ -125,12 +135,13 @@ export function TogetherIdeas({ people, personId, compact = false }: Props) {
           <div className="idea-actions">
             <button title="编辑" type="button" onClick={() => setEditing({ id: idea.id, personId: idea.personId, content: idea.content, plannedAt: idea.plannedAt ? toLocalInput(idea.plannedAt) : '', locationText: idea.locationText ?? '', note: idea.note ?? '' })}><Pencil size={15}/></button>
             {idea.status === 'IDEA' && <button title="开始安排" type="button" onClick={() => updateStatus(idea, 'PLANNING')}><CalendarDays size={15}/></button>}
-            {idea.status === 'PLANNING' && <Link title="记录这次见面" href={`/encounters/new?person=${idea.personId}&idea=${encodeURIComponent(idea.content)}${idea.locationText ? `&location=${encodeURIComponent(idea.locationText)}` : ''}`}><Check size={15}/></Link>}
+            {idea.status === 'PLANNING' && <><Link title="记录这次见面" href={`/encounters/new?person=${idea.personId}&idea=${encodeURIComponent(idea.content)}${idea.locationText ? `&location=${encodeURIComponent(idea.locationText)}` : ''}`}><Camera size={15}/></Link><button title="标记完成" type="button" onClick={() => updateStatus(idea, 'DONE')}><Check size={15}/></button></>}
+            {idea.status === 'DONE' && <button title="重新放回想做" type="button" onClick={() => updateStatus(idea, 'IDEA')}><RotateCcw size={15}/></button>}
             <button title="删除" type="button" onClick={() => removeIdea(idea)}><Trash2 size={15}/></button>
           </div>
         </article>;
       })}
-      {!visibleIdeas.length && <button className="idea-empty" type="button" onClick={() => setEditing(emptyDraft(personId ?? people[0]?.id))}><Lightbulb size={25}/><span><strong>最近想和 TA 做什么？</strong><small>先记下一句话，时间地点以后再说。</small></span></button>}
+      {!visibleIdeas.length && <button className="idea-empty" type="button" onClick={() => setEditing(emptyDraft(personId ?? people[0]?.id))}><Lightbulb size={25}/><span><strong>{board ? emptyTitle(statusFilter) : '最近想和 TA 做什么？'}</strong><small>{board && statusFilter === 'DONE' ? '完成一件事后，它会留在这里。' : '先记下一句话，时间地点以后再说。'}</small></span></button>}
     </div>
   </section>;
 }
@@ -161,4 +172,12 @@ function toLocalInput(value: string) {
   const date = new Date(value);
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function statusLabel(status: TogetherIdeaStatus) {
+  return status === 'IDEA' ? '想做' : status === 'PLANNING' ? '安排中' : '已完成';
+}
+
+function emptyTitle(status: TogetherIdeaStatus) {
+  return status === 'IDEA' ? '还没有记下想做的事' : status === 'PLANNING' ? '暂时没有安排中的事' : '还没有完成的共同计划';
 }

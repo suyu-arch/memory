@@ -3,9 +3,11 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   Camera,
+  CheckCircle2,
   Coffee,
   Flower2,
   Heart,
+  Lightbulb,
   LockKeyhole,
   Mail,
   MapPin,
@@ -16,7 +18,7 @@ import {
 import { usePathname } from 'next/navigation';
 
 type Atmosphere = {
-  tone: 'home' | 'friends' | 'record' | 'memory' | 'me' | 'invite';
+  tone: 'home' | 'friends' | 'record' | 'memory' | 'together' | 'me' | 'invite';
   icons: [LucideIcon, LucideIcon, LucideIcon];
 };
 
@@ -25,6 +27,7 @@ function atmosphereFor(pathname: string): Atmosphere {
   if (pathname === '/encounters/new') return { tone: 'record', icons: [Coffee, Heart, Sparkles] };
   if (pathname.startsWith('/encounters')) return { tone: 'memory', icons: [Camera, Star, MapPin] };
   if (pathname.startsWith('/friends')) return { tone: 'friends', icons: [Flower2, Mail, Heart] };
+  if (pathname.startsWith('/together')) return { tone: 'together', icons: [Lightbulb, Heart, CheckCircle2] };
   if (pathname.startsWith('/invite')) return { tone: 'invite', icons: [Mail, Heart, Sparkles] };
   return { tone: 'me', icons: [Moon, LockKeyhole, Sparkles] };
 }
