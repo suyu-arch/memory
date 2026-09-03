@@ -6,6 +6,7 @@ export const ReflectionVisibilitySchema = z.enum(['PRIVATE', 'PARTICIPANTS']);
 export const AssetStateSchema = z.enum(['PENDING', 'UPLOADING', 'PROCESSING', 'READY', 'FAILED']);
 export const ScrapbookTemplateSchema = z.enum(['MAGAZINE', 'WOOD', 'FILM', 'COLLAGE']);
 export const DecorationLevelSchema = z.enum(['RESTRAINED', 'BALANCED', 'RICH']);
+export const TogetherIdeaStatusSchema = z.enum(['IDEA', 'PLANNING', 'DONE']);
 
 const dateTime = z.string().datetime({ offset: true });
 
@@ -16,6 +17,23 @@ export const CreatePersonSchema = z.object({
   relationshipSince: dateTime.optional(),
 });
 export const UpdatePersonSchema = CreatePersonSchema.partial();
+
+export const CreateTogetherIdeaSchema = z.object({
+  personId: z.string().min(1),
+  content: z.string().trim().min(1).max(240),
+  plannedAt: dateTime.optional(),
+  locationText: z.string().trim().max(240).optional(),
+  note: z.string().trim().max(2000).optional(),
+});
+
+export const UpdateTogetherIdeaSchema = z.object({
+  content: z.string().trim().min(1).max(240).optional(),
+  status: TogetherIdeaStatusSchema.optional(),
+  plannedAt: dateTime.nullable().optional(),
+  locationText: z.string().trim().max(240).nullable().optional(),
+  note: z.string().trim().max(2000).nullable().optional(),
+  encounterId: z.string().min(1).nullable().optional(),
+});
 
 export const CreateMomentSchema = z.object({
   title: z.string().trim().min(1).max(120),
@@ -76,6 +94,8 @@ export const CreateInvitationSchema = z.object({
 
 export type CreatePersonInput = z.infer<typeof CreatePersonSchema>;
 export type UpdatePersonInput = z.infer<typeof UpdatePersonSchema>;
+export type CreateTogetherIdeaInput = z.infer<typeof CreateTogetherIdeaSchema>;
+export type UpdateTogetherIdeaInput = z.infer<typeof UpdateTogetherIdeaSchema>;
 export type CreateMomentInput = z.infer<typeof CreateMomentSchema>;
 export type UpdateMomentInput = z.infer<typeof UpdateMomentSchema>;
 export type CreateEncounterInput = z.infer<typeof CreateEncounterSchema>;

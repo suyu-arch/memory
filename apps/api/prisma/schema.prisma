@@ -66,90 +66,127 @@ enum DecorationLevel {
   RICH
 }
 
+enum TogetherIdeaStatus {
+  IDEA
+  PLANNING
+  DONE
+}
+
 model User {
-  id             String   @id
-  email          String   @unique
-  displayName    String
-  avatarUrl      String?
-  storageQuota   BigInt   @default(5368709120)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  person         Person?  @relation("AccountPerson")
-  createdPeople  Person[] @relation("CreatedPeople")
-  friendLinks    FriendLink[]
-  ownedEncounters Encounter[] @relation("EncounterOwner")
-  memberships    EncounterMember[]
-  reflections    Reflection[]
-  assets         Asset[]
-  uploadBatches  UploadBatch[]
-  comments       Comment[]
-  revisions      Revision[]
-  sentInvitations Invitation[] @relation("InvitationSender")
-  createdLayouts ScrapbookLayout[]
-  exports        ExportJob[]
+  id                   String            @id
+  email                String            @unique
+  displayName          String
+  avatarUrl            String?
+  storageQuota         BigInt            @default(5368709120)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  person               Person?           @relation("AccountPerson")
+  createdPeople        Person[]          @relation("CreatedPeople")
+  friendLinks          FriendLink[]
+  ownedEncounters      Encounter[]       @relation("EncounterOwner")
+  memberships          EncounterMember[]
+  reflections          Reflection[]
+  assets               Asset[]
+  uploadBatches        UploadBatch[]
+  comments             Comment[]
+  revisions            Revision[]
+  sentInvitations      Invitation[]      @relation("InvitationSender")
+  createdLayouts       ScrapbookLayout[]
+  exports              ExportJob[]
+  ownedTogetherIdeas   TogetherIdea[]    @relation("TogetherIdeaOwner")
+  createdTogetherIdeas TogetherIdea[]    @relation("TogetherIdeaCreator")
 }
 
 model Person {
-  id                  String   @id @default(cuid())
-  accountUserId       String?  @unique
-  accountUser         User?    @relation("AccountPerson", fields: [accountUserId], references: [id], onDelete: SetNull)
-  createdByUserId     String
-  createdBy           User     @relation("CreatedPeople", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  displayName         String
-  avatarUrl           String?
-  mergedIntoPersonId  String?
-  mergedInto          Person?  @relation("PersonMerge", fields: [mergedIntoPersonId], references: [id])
-  mergedPeople        Person[] @relation("PersonMerge")
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  friendLinks         FriendLink[]
-  participants        EncounterParticipant[]
-  invitations         Invitation[]
+  id                 String                 @id @default(cuid())
+  accountUserId      String?                @unique
+  accountUser        User?                  @relation("AccountPerson", fields: [accountUserId], references: [id], onDelete: SetNull)
+  createdByUserId    String
+  createdBy          User                   @relation("CreatedPeople", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  displayName        String
+  avatarUrl          String?
+  mergedIntoPersonId String?
+  mergedInto         Person?                @relation("PersonMerge", fields: [mergedIntoPersonId], references: [id])
+  mergedPeople       Person[]               @relation("PersonMerge")
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  friendLinks        FriendLink[]
+  participants       EncounterParticipant[]
+  invitations        Invitation[]
+  togetherIdeas      TogetherIdea[]
+
   @@index([createdByUserId])
   @@index([mergedIntoPersonId])
 }
 
 model FriendLink {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   ownerUserId       String
-  owner             User     @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  owner             User      @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   personId          String
-  person            Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+  person            Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
   nickname          String?
   relationshipSince DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
   @@unique([ownerUserId, personId])
   @@index([ownerUserId])
 }
 
 model Encounter {
-  id           String        @id @default(cuid())
-  kind         EncounterKind
-  ownerUserId  String
-  owner        User          @relation("EncounterOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
-  title        String
-  story        String        @db.Text
-  locationText String?
-  startAt      DateTime
-  endAt        DateTime?
-  coverAssetId String?
-  version      Int           @default(1)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  participants EncounterParticipant[]
-  members      EncounterMember[]
-  moments      Moment[]
-  reflections  Reflection[]
-  assets       Asset[]
+  id            String                 @id @default(cuid())
+  kind          EncounterKind
+  ownerUserId   String
+  owner         User                   @relation("EncounterOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  title         String
+  story         String                 @db.Text
+  locationText  String?
+  startAt       DateTime
+  endAt         DateTime?
+  coverAssetId  String?
+  version       Int                    @default(1)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  participants  EncounterParticipant[]
+  members       EncounterMember[]
+  moments       Moment[]
+  reflections   Reflection[]
+  assets        Asset[]
   uploadBatches UploadBatch[]
-  comments     Comment[]
-  revisions    Revision[]
-  invitations Invitation[]
-  layouts      ScrapbookLayout[]
-  exports      ExportJob[]
+  comments      Comment[]
+  revisions     Revision[]
+  invitations   Invitation[]
+  layouts       ScrapbookLayout[]
+  exports       ExportJob[]
+  sourceIdeas   TogetherIdea[]
+
   @@index([ownerUserId, startAt(sort: Desc)])
   @@index([startAt(sort: Desc)])
+}
+
+model TogetherIdea {
+  id              String             @id @default(cuid())
+  ownerUserId     String
+  owner           User               @relation("TogetherIdeaOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  personId        String
+  person          Person             @relation(fields: [personId], references: [id], onDelete: Cascade)
+  createdByUserId String
+  createdBy       User               @relation("TogetherIdeaCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  content         String
+  status          TogetherIdeaStatus @default(IDEA)
+  plannedAt       DateTime?
+  locationText    String?
+  note            String?            @db.Text
+  encounterId     String?
+  encounter       Encounter?         @relation(fields: [encounterId], references: [id], onDelete: SetNull)
+  version         Int                @default(1)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([ownerUserId, updatedAt(sort: Desc)])
+  @@index([personId, updatedAt(sort: Desc)])
+  @@index([status])
 }
 
 model EncounterParticipant {
@@ -159,6 +196,7 @@ model EncounterParticipant {
   personId    String
   person      Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
+
   @@unique([encounterId, personId])
   @@index([personId, encounterId])
 }
@@ -172,6 +210,7 @@ model EncounterMember {
   role        MemberRole
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
   @@unique([encounterId, userId])
   @@index([userId, encounterId])
 }
@@ -188,19 +227,21 @@ model Moment {
   assets       Asset[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
   @@index([encounterId, sortOrder])
 }
 
 model Reflection {
-  id          String               @id @default(cuid())
-  encounterId String
-  encounter   Encounter            @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  id           String               @id @default(cuid())
+  encounterId  String
+  encounter    Encounter            @relation(fields: [encounterId], references: [id], onDelete: Cascade)
   authorUserId String
-  author      User                 @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
-  visibility  ReflectionVisibility
-  body        String               @db.Text
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  author       User                 @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  visibility   ReflectionVisibility
+  body         String               @db.Text
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
   @@index([encounterId, createdAt])
   @@index([authorUserId])
 }
@@ -219,26 +260,27 @@ model UploadBatch {
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   assets         Asset[]
+
   @@index([ownerUserId, createdAt(sort: Desc)])
 }
 
 model Asset {
-  id                String     @id @default(cuid())
+  id                String      @id @default(cuid())
   ownerUserId       String
-  owner             User       @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  owner             User        @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   encounterId       String
-  encounter         Encounter  @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  encounter         Encounter   @relation(fields: [encounterId], references: [id], onDelete: Cascade)
   uploadBatchId     String
   uploadBatch       UploadBatch @relation(fields: [uploadBatchId], references: [id], onDelete: Cascade)
   momentId          String?
-  moment            Moment?    @relation(fields: [momentId], references: [id], onDelete: SetNull)
-  storageKey        String     @unique
+  moment            Moment?     @relation(fields: [momentId], references: [id], onDelete: SetNull)
+  storageKey        String      @unique
   thumbnailKey      String?
   multipartUploadId String?
   originalFilename  String
   mimeType          String
   bytes             BigInt
-  state             AssetState @default(PENDING)
+  state             AssetState  @default(PENDING)
   sha256            String?
   perceptualHash    String?
   takenAt           DateTime?
@@ -247,40 +289,43 @@ model Asset {
   sharpness         Float?
   exposure          Float?
   sceneGroup        Int?
-  recommended       Boolean    @default(true)
-  adopted           Boolean    @default(true)
-  sortOrder         Int        @default(0)
+  recommended       Boolean     @default(true)
+  adopted           Boolean     @default(true)
+  sortOrder         Int         @default(0)
   error             String?
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
   @@index([encounterId, sortOrder])
   @@index([ownerUserId, sha256])
   @@index([uploadBatchId, state])
 }
 
 model Comment {
-  id          String    @id @default(cuid())
-  encounterId String
-  encounter   Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  id           String    @id @default(cuid())
+  encounterId  String
+  encounter    Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
   authorUserId String
-  author      User      @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
-  body        String    @db.Text
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  author       User      @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  body         String    @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
   @@index([encounterId, createdAt])
 }
 
 model Revision {
-  id          String    @id @default(cuid())
-  encounterId String
-  encounter   Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  id           String    @id @default(cuid())
+  encounterId  String
+  encounter    Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
   authorUserId String
-  author      User      @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
-  fromVersion Int
-  toVersion   Int
-  summary     String
-  snapshot    Json
-  createdAt   DateTime  @default(now())
+  author       User      @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  fromVersion  Int
+  toVersion    Int
+  summary      String
+  snapshot     Json
+  createdAt    DateTime  @default(now())
+
   @@index([encounterId, createdAt(sort: Desc)])
 }
 
@@ -299,28 +344,30 @@ model Invitation {
   acceptedAt    DateTime?
   revokedAt     DateTime?
   createdAt     DateTime   @default(now())
+
   @@index([email, expiresAt])
 }
 
 model ScrapbookLayout {
-  id                    String             @id @default(cuid())
-  encounterId           String
-  encounter             Encounter          @relation(fields: [encounterId], references: [id], onDelete: Cascade)
-  createdByUserId       String
-  createdBy             User               @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
-  template              ScrapbookTemplate
-  decorationLevel       DecorationLevel
-  status                LayoutStatus       @default(QUEUED)
+  id                     String            @id @default(cuid())
+  encounterId            String
+  encounter              Encounter         @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  createdByUserId        String
+  createdBy              User              @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+  template               ScrapbookTemplate
+  decorationLevel        DecorationLevel
+  status                 LayoutStatus      @default(QUEUED)
   sourceEncounterVersion Int
-  sourceText            String             @db.Text
+  sourceText             String            @db.Text
   layout                 Json?
-  allowCloudVision      Boolean            @default(false)
-  stale                 Boolean            @default(false)
-  isCurrent             Boolean            @default(false)
-  error                 String?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  exports               ExportJob[]
+  allowCloudVision       Boolean           @default(false)
+  stale                  Boolean           @default(false)
+  isCurrent              Boolean           @default(false)
+  error                  String?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  exports                ExportJob[]
+
   @@index([encounterId, createdAt(sort: Desc)])
 }
 
@@ -337,5 +384,6 @@ model ExportJob {
   error         String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+
   @@index([requestedById, createdAt(sort: Desc)])
 }

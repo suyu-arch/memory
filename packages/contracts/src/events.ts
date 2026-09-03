@@ -3,4 +3,5 @@ export type RealtimeEvent =
   | { type: 'asset.ready'; encounterId: string; assetId: string }
   | { type: 'upload.progress'; batchId: string; completed: number; total: number }
   | { type: 'layout.ready'; encounterId: string; layoutId: string }
+  | { type: 'together-idea.updated'; ideaId: string }
   | { type: 'invite.accepted'; invitationId: string; userId: string };

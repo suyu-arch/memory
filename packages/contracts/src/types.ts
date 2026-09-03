@@ -14,6 +14,7 @@ export type ReflectionVisibility = z.infer<typeof ReflectionVisibilitySchema>;
 export type AssetState = z.infer<typeof AssetStateSchema>;
 export type ScrapbookTemplate = z.infer<typeof ScrapbookTemplateSchema>;
 export type DecorationLevel = z.infer<typeof DecorationLevelSchema>;
+export type TogetherIdeaStatus = 'IDEA' | 'PLANNING' | 'DONE';
 
 export interface AuthUser {
   id: string;
@@ -51,6 +52,22 @@ export interface EncounterSummary {
   photoCount: number;
   photoUrls?: string[];
   participantNames?: string[];
+}
+
+export interface TogetherIdea {
+  id: string;
+  personId: string;
+  personName: string;
+  personAvatarUrl: string | null;
+  content: string;
+  status: TogetherIdeaStatus;
+  proposedBy: string;
+  plannedAt: string | null;
+  locationText: string | null;
+  note: string | null;
+  encounterId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export type ScrapbookBlock =

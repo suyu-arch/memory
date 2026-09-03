@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CreateEncounterSchema, CreateUploadBatchSchema } from './schemas.js';
+import { CreateEncounterSchema, CreateTogetherIdeaSchema, CreateUploadBatchSchema, UpdateTogetherIdeaSchema } from './schemas.js';
 
 describe('shared contracts', () => {
   it('accepts a meeting with multiple participants', () => {
@@ -15,5 +15,11 @@ describe('shared contracts', () => {
       filename: `${index}.jpg`, mimeType: 'image/jpeg', bytes: 100,
     }));
     expect(CreateUploadBatchSchema.safeParse({ encounterId: 'e1', files }).success).toBe(false);
+  });
+
+  it('keeps a together idea lightweight while allowing optional plans', () => {
+    expect(CreateTogetherIdeaSchema.safeParse({ personId: 'p1', content: '去吃云南菜' }).success).toBe(true);
+    expect(CreateTogetherIdeaSchema.safeParse({ personId: 'p1', content: '' }).success).toBe(false);
+    expect(UpdateTogetherIdeaSchema.safeParse({ status: 'PLANNING', plannedAt: null }).success).toBe(true);
   });
 });

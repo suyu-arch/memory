@@ -19,15 +19,19 @@ import { InvitationsService } from './invitations/invitations.service.js';
 import { AccountController } from './account/account.controller.js';
 import { AccountService } from './account/account.service.js';
 import { ObservabilityInterceptor } from './common/observability.interceptor.js';
+import { TogetherIdeasController } from './together-ideas/together-ideas.controller.js';
+import { TogetherIdeasService } from './together-ideas/together-ideas.service.js';
 
 @Module({
   controllers: [
     HealthController, RealtimeController, PeopleController, EncountersController,
     UploadsController, LayoutsController, InvitationsController, AccountController,
+    TogetherIdeasController,
   ],
   providers: [
     PrismaService, JobsService, RealtimeService, PeopleService, EncountersService,
     UploadsService, LayoutsService, InvitationsService, AccountService,
+    TogetherIdeasService,
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_INTERCEPTOR, useClass: ObservabilityInterceptor },
   ],
