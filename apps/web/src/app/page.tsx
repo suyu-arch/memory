@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Camera, Heart, Plus, Sparkles } from 'lucide-react';
+import { ArrowRight, Camera, Heart, Plus } from 'lucide-react';
 import type { CursorPage, EncounterSummary, PersonSummary } from '@togetherly/contracts';
 import { PersonAvatar } from '@/components/person-avatar';
 import { PhotoSlideshow } from '@/components/photo-slideshow';
@@ -17,6 +17,7 @@ export default async function HomePage() {
   return <div className="page">
     <section className="hero">
       <div className="hero-copy">
+        <div className="hero-copy-doodles" aria-hidden="true"><span className="hero-copy-sun">☼</span><span className="hero-copy-heart">♡</span><span className="hero-copy-envelope">✉</span></div>
         <div className="hero-kicker"><span>NEW</span> 和朋友一起记录</div>
         <h1>EVERYDAY<br/><i>moments,</i><br/>WITH MY PEOPLE.</h1>
         <p>把见面的照片、原话和小情绪放进来。<br/>Memory 会帮你把零散瞬间变成一篇好看的共同日记。</p>
@@ -39,7 +40,6 @@ export default async function HomePage() {
     <TogetherIdeas people={people} compact/>
     <div className="section-intro"><div><span className="eyebrow">RECENT LOGS</span><h2 className="section-title">最近的共同经历</h2></div><Link href="/encounters/new" className="button pink"><Camera size={17}/>倒入照片</Link></div>
     <div className="memory-list">{encounters.slice(0,3).map((encounter, index) => <MemoryCard encounter={encounter} index={index} key={encounter.id}/>)}</div>
-    <section className="upload-callout"><span className="callout-icon"><Sparkles size={22}/></span><div><strong>47 张照片还没整理？</strong><p>直接全部丢进来。我们保留每一张，只把更适合讲故事的放到前面。</p></div><span className="callout-arrow">→</span></section>
   </div>;
 }
 
