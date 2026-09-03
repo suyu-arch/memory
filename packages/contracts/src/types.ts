@@ -49,6 +49,8 @@ export interface EncounterSummary {
   coverUrl: string | null;
   participantCount: number;
   photoCount: number;
+  photoUrls?: string[];
+  participantNames?: string[];
 }
 
 export type ScrapbookBlock =
