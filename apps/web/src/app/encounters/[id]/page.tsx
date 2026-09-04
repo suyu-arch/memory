@@ -2,7 +2,7 @@ import { api } from '@/lib/api';
 import { demoEncounters } from '@/lib/demo';
 import { encounterPhotos } from '@/lib/media';
 import { PhotoSlideshow } from '@/components/photo-slideshow';
-import { BookOpen, Camera, Coffee, Heart, Images, LockKeyhole, MapPin, Moon, Sparkles, Star, Users } from 'lucide-react';
+import { BookOpen, Camera, Coffee, Heart, Images, LockKeyhole, MapPin, Moon, Star, Users } from 'lucide-react';
 
 type Detail = (typeof demoEncounters)[number] & { moments?: Array<{id:string;startAt:string|null;title:string;body:string}>; assets?: unknown[]; reflections?: Array<{id:string;body:string;visibility:string}>; layouts?: Array<{id:string;status:string;layout?:unknown}> };
 
@@ -27,6 +27,5 @@ export default async function EncounterPage({ params }: { params: Promise<{ id: 
     <section className="panel encounter-story-panel"><span className="paper-tape" aria-hidden="true"/><h2 className="section-title" style={{marginTop:0}}><BookOpen size={21}/> 共同故事</h2><div className="story">{encounter.story}</div><span className="story-heart" aria-hidden="true">♡</span></section>
     <h2 className="section-title"><Coffee size={21}/> 这次做了什么</h2><section className="panel encounter-moments-panel">{encounter.moments?.map((moment)=><div className="moment" key={moment.id}><time>{moment.startAt ? new Date(moment.startAt).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) : '后来'}</time><div><strong>{moment.title}</strong><p className="subtle">{moment.body}</p></div></div>)}</section>
     <h2 className="section-title"><Images size={21}/> 全部照片</h2><div className="photo-mosaic">{Array.from({length:photoCount},(_,index)=><div className="photo-placeholder encounter-photo" style={{backgroundImage:`url(${photos[index % photos.length]})`}} key={index}/>)}</div>
-    <h2 className="section-title"><Sparkles size={21}/> 手帐模式</h2><section className="scrapbook"><span className="eyebrow">Memory 手帐</span><h2 style={{fontFamily:'serif',fontSize:30}}>{encounter.title}</h2><p className="story">{encounter.story}</p><div className="scrapbook-photos"><div className="scrap-photo" style={{backgroundImage:`url(${photos[0]})`}}/><div className="scrap-photo" style={{backgroundImage:`url(${photos[1] ?? photos[0]})`}}/></div></section>
-  </div><aside><section className="panel encounter-private-panel"><strong>你的私人感受</strong><p className="subtle"><LockKeyhole size={14}/> 只有你能看到</p><p>{encounter.reflections?.find((item)=>item.visibility==='PRIVATE')?.body ?? '还没有写下感受。'}</p></section><section className="panel encounter-ai-panel" style={{marginTop:16}}><strong>智能整理 ✦</strong><p className="subtle">系统保留了所有照片，并将相似照片折叠展示。</p><button className="button orange" style={{width:'100%',justifyContent:'center'}}>重新生成手帐</button></section></aside></div></div>;
+  </div><aside><section className="panel encounter-private-panel"><strong>你的私人感受</strong><p className="subtle"><LockKeyhole size={14}/> 只有你能看到</p><p>{encounter.reflections?.find((item)=>item.visibility==='PRIVATE')?.body ?? '还没有写下感受。'}</p></section><section className="panel encounter-ai-panel" style={{marginTop:16}}><strong>智能整理 ✦</strong><p className="subtle">系统保留了所有照片，并将相似照片折叠展示。</p><button className="button orange" style={{width:'100%',justifyContent:'center'}}>重新整理照片</button></section></aside></div></div>;
 }
