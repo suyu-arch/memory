@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, CalendarDays, Camera, Check, ChevronDown, Lightbulb, MapPin, Pencil, Plus, RotateCcw, Trash2, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronDown, Flower2, Lightbulb, Music2, MapPin, Pencil, Plus, RotateCcw, Ticket, Trash2, Utensils, X } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { PersonSummary, TogetherIdea, TogetherIdeaStatus } from '@togetherly/contracts';
@@ -107,6 +107,13 @@ export function TogetherIdeas({ people, personId, compact = false, board = false
   if (!ready) return <div className="ideas-loading">正在翻找你们的小念头…</div>;
 
   return <section className={`together-ideas ${compact ? 'compact' : ''} ${board ? 'ideas-board' : ''}`}>
+    <div className="ideas-doodles" aria-hidden="true">
+      <span className="ideas-doodle ideas-doodle-food"><Utensils/></span>
+      <span className="ideas-doodle ideas-doodle-ticket"><Ticket/></span>
+      <span className="ideas-doodle ideas-doodle-music"><Music2/></span>
+      <span className="ideas-doodle ideas-doodle-flower"><Flower2/></span>
+      <span className="ideas-doodle-label">LET&apos;S GO!</span>
+    </div>
     <div className="ideas-heading">
       <div><span className="eyebrow">NEXT TIME TOGETHER</span><h2 className="section-title">{board ? '我们的清单' : personId ? '我们下次一起' : '下次一起'}</h2></div>
       <div className="ideas-heading-actions">

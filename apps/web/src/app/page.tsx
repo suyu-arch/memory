@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Camera, Heart, Plus } from 'lucide-react';
+import { ArrowRight, Camera, Flower2, Heart, Mail, Plus, Smile, Sparkles, Star } from 'lucide-react';
 import type { CursorPage, EncounterSummary, PersonSummary } from '@togetherly/contracts';
 import { PersonAvatar } from '@/components/person-avatar';
 import { PhotoSlideshow } from '@/components/photo-slideshow';
@@ -16,6 +16,14 @@ export default async function HomePage() {
   const recentEncounters = encounters.slice(0, 3);
   return <div className="page">
     <section className="hero">
+      <div className="hero-scene-doodles" aria-hidden="true">
+        <span className="hero-scene-flower"><Flower2/></span>
+        <span className="hero-scene-smile"><Smile/></span>
+        <span className="hero-scene-camera"><Camera/></span>
+        <span className="hero-scene-mail"><Mail/></span>
+        <span className="hero-scene-star"><Star/></span>
+        <span className="hero-scene-sparkles"><Sparkles/></span>
+      </div>
       <div className="hero-copy">
         <div className="hero-copy-doodles" aria-hidden="true"><span className="hero-copy-sun">☼</span><span className="hero-copy-heart">♡</span><span className="hero-copy-envelope">✉</span></div>
         <div className="hero-kicker"><span>NEW</span> 和朋友一起记录</div>
