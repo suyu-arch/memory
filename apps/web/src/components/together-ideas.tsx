@@ -125,13 +125,15 @@ export function TogetherIdeas({ people, personId, compact = false, board = false
       {visibleIdeas.slice(0, compact ? 3 : undefined).map((idea, index) => {
         const person = people.find((item) => item.id === idea.personId);
         return <article className={`idea-card idea-${idea.status.toLowerCase()}`} key={idea.id}>
-          {person ? <PersonAvatar personId={person.id} name={idea.personName} src={personPhoto(person, index)} className={`friend-photo-${index % 3 + 1}`}/> : <span className="idea-bulb"><Lightbulb size={21}/></span>}
-          <div className="idea-copy">
-            <div className="idea-meta"><span>{idea.personName}</span><small>{idea.proposedBy}提出 · {statusLabel(idea.status)}</small></div>
-            <strong>{idea.content}</strong>
-            {(idea.plannedAt || idea.locationText) && <div className="idea-details">{idea.plannedAt && <span><CalendarDays size={13}/>{formatPlanDate(idea.plannedAt)}</span>}{idea.locationText && <span><MapPin size={13}/>{idea.locationText}</span>}</div>}
-            {idea.note && <p>{idea.note}</p>}
-          </div>
+          <Link className="idea-card-link" href={`/together/${idea.personId}`} aria-label={`查看我和${idea.personName}的下次一起清单`}>
+            {person ? <PersonAvatar personId={person.id} name={idea.personName} src={personPhoto(person, index)} className={`friend-photo-${index % 3 + 1}`}/> : <span className="idea-bulb"><Lightbulb size={21}/></span>}
+            <div className="idea-copy">
+              <div className="idea-meta"><span>{idea.personName}</span><small>{idea.proposedBy}提出 · {statusLabel(idea.status)}</small></div>
+              <strong>{idea.content}</strong>
+              {(idea.plannedAt || idea.locationText) && <div className="idea-details">{idea.plannedAt && <span><CalendarDays size={13}/>{formatPlanDate(idea.plannedAt)}</span>}{idea.locationText && <span><MapPin size={13}/>{idea.locationText}</span>}</div>}
+              {idea.note && <p>{idea.note}</p>}
+            </div>
+          </Link>
           <div className="idea-actions">
             <button title="编辑" type="button" onClick={() => setEditing({ id: idea.id, personId: idea.personId, content: idea.content, plannedAt: idea.plannedAt ? toLocalInput(idea.plannedAt) : '', locationText: idea.locationText ?? '', note: idea.note ?? '' })}><Pencil size={15}/></button>
             {idea.status === 'IDEA' && <button title="开始安排" type="button" onClick={() => updateStatus(idea, 'PLANNING')}><CalendarDays size={15}/></button>}
