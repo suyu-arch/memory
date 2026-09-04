@@ -29,7 +29,7 @@ export default async function HomePage() {
         <div className="hero-kicker"><span>NEW</span> 和朋友一起记录</div>
         <h1>EVERYDAY<br/><i>moments,</i><br/>WITH MY PEOPLE.</h1>
         <p>把见面的照片、原话和小情绪放进来。<br/>Memory 会帮你把零散瞬间变成一篇好看的共同日记。</p>
-        <div className="hero-actions"><Link href="/encounters/new" className="button ink"><Plus size={18}/>记录这次见面</Link><Link href="/friends" className="text-link">看看朋友们 <ArrowRight size={17}/></Link></div>
+        <div className="hero-actions"><Link href="/encounters/new" className="button ink"><Plus size={18}/>记录一段经历</Link><Link href="/friends" className="text-link">看看朋友们 <ArrowRight size={17}/></Link></div>
         <div className="privacy-note"><Heart size={15} fill="currentColor"/> 仅你和受邀的朋友可见</div>
       </div>
       <div className="hero-preview">
