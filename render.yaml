@@ -22,8 +22,6 @@ services:
         value: https://suyu-arch.github.io
       - key: DATABASE_URL
         sync: false
-      - key: DIRECT_URL
-        sync: false
       - key: SUPABASE_URL
         value: https://xmhazpmxbrhncxxmxzjn.supabase.co
       - key: SUPABASE_JWKS_URL
