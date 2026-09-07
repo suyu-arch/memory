@@ -7,6 +7,11 @@ export class JobsService implements OnModuleDestroy {
   private readonly media = new Queue('media', { connection: this.connection });
   private readonly layouts = new Queue('layouts', { connection: this.connection });
 
+  constructor() {
+    this.media.on('error', (error) => console.error('Media queue error:', error.message));
+    this.layouts.on('error', (error) => console.error('Layouts queue error:', error.message));
+  }
+
   processAsset(assetId: string) {
     return this.media.add('asset.process', { assetId }, { jobId: `asset:${assetId}`, attempts: 5, backoff: { type: 'exponential', delay: 2_000 } });
   }

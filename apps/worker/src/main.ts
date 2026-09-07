@@ -32,6 +32,10 @@ const layoutWorker = new Worker('layouts', async (job) => {
   if (job.name === 'export.generate') await processExport(job as Job<{ exportId: string }>);
 }, { connection, concurrency: 2 });
 
+mediaWorker.on('error', (error) => console.error('Media worker Redis error:', error.message));
+layoutWorker.on('error', (error) => console.error('Layout worker Redis error:', error.message));
+publisher.on('error', (error) => console.error('Redis publisher error:', error.message));
+
 async function processAsset(job: Job<{ assetId: string }>) {
   const asset = await prisma.asset.findUniqueOrThrow({ where: { id: job.data.assetId } });
   if (asset.state === 'READY') return;
