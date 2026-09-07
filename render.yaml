@@ -10,7 +10,7 @@ services:
       pnpm turbo run build --filter=@togetherly/api --filter=@togetherly/worker
     startCommand: >-
       pnpm --filter @togetherly/api exec prisma db push --skip-generate &&
-      pnpm --parallel --filter @togetherly/api --filter @togetherly/worker start
+      node scripts/start-production.mjs
     envVars:
       - key: NODE_VERSION
         value: 22

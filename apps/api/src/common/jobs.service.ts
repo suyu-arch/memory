@@ -3,7 +3,7 @@ import { Queue } from 'bullmq';
 
 @Injectable()
 export class JobsService implements OnModuleDestroy {
-  private readonly connection = { url: process.env.VALKEY_URL ?? 'redis://localhost:6379' };
+  private readonly connection = redisConnection(process.env.VALKEY_URL ?? 'redis://localhost:6379');
   private readonly media = new Queue('media', { connection: this.connection });
   private readonly layouts = new Queue('layouts', { connection: this.connection });
 
@@ -20,4 +20,15 @@ export class JobsService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() { await Promise.all([this.media.close(), this.layouts.close()]); }
+}
+
+function redisConnection(raw: string) {
+  const url = new URL(raw);
+  return {
+    host: url.hostname,
+    port: Number(url.port || 6379),
+    username: url.username || undefined,
+    password: url.password || undefined,
+    tls: url.protocol === 'rediss:' ? {} : undefined,
+  };
 }
