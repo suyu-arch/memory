@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { House, Plus, Settings, Sparkles, Users } from 'lucide-react';
 import { PageAtmosphere } from '../components/page-atmosphere';
+import { AuthProvider } from '../components/auth-provider';
 import './globals.css';
 
 export const metadata: Metadata = { title: 'Memory · 共同经历', description: '把照片倒进来，让相遇自己长成故事。' };
@@ -14,7 +15,7 @@ const nav = [
 ];
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="zh-CN"><body>
+  return <html lang="zh-CN"><body><AuthProvider>
     <div className="app-shell">
       <aside className="sidebar">
         <Link className="brand" href="/"><span className="brand-mark"><Sparkles size={21}/></span><span>MEMORY</span></Link>
@@ -24,5 +25,5 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <main className="main-content"><PageAtmosphere />{children}</main>
       <nav className="bottom-nav">{nav.map(({ href, label, icon: Icon, primary }) => <Link key={href} href={href} className={primary ? 'bottom-item bottom-primary' : 'bottom-item'}><Icon size={21}/><span>{label}</span></Link>)}</nav>
     </div>
-  </body></html>;
+  </AuthProvider></body></html>;
 }

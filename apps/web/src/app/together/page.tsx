@@ -1,10 +1,14 @@
+'use client';
+
 import type { PersonSummary } from '@togetherly/contracts';
+import { useEffect, useState } from 'react';
 import { TogetherIdeas } from '@/components/together-ideas';
-import { api } from '@/lib/api';
+import { clientApi } from '@/lib/client-api';
 import { demoPeople } from '@/lib/demo';
 
-export default async function TogetherPage() {
-  const people = await api<PersonSummary[]>('/people').catch(() => demoPeople);
+export default function TogetherPage() {
+  const [people, setPeople] = useState<PersonSummary[]>(demoPeople);
+  useEffect(() => { if (process.env.NEXT_PUBLIC_API_BASE_URL) void clientApi<PersonSummary[]>('/people').then(setPeople).catch(() => undefined); }, []);
 
   return <div className="page together-page">
     <div className="header-row together-page-header">

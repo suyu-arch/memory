@@ -1,18 +1,25 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowRight, Camera, Flower2, Heart, Mail, Plus, Smile, Sparkles, Star } from 'lucide-react';
 import type { CursorPage, EncounterSummary, PersonSummary } from '@togetherly/contracts';
+import { useEffect, useState } from 'react';
 import { PersonAvatar } from '@/components/person-avatar';
 import { PhotoSlideshow } from '@/components/photo-slideshow';
 import { TogetherIdeas } from '@/components/together-ideas';
-import { api } from '@/lib/api';
+import { clientApi } from '@/lib/client-api';
 import { demoEncounters, demoPeople } from '@/lib/demo';
 import { encounterPhotos, personPhoto } from '@/lib/media';
 
-export default async function HomePage() {
-  const [people, encounters] = await Promise.all([
-    api<PersonSummary[]>('/people').catch(() => demoPeople),
-    api<CursorPage<EncounterSummary>>('/encounters').then((page) => page.items).catch(() => demoEncounters),
-  ]);
+export default function HomePage() {
+  const [people, setPeople] = useState<PersonSummary[]>(demoPeople);
+  const [encounters, setEncounters] = useState<EncounterSummary[]>(demoEncounters);
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_API_BASE_URL) return;
+    void Promise.all([clientApi<PersonSummary[]>('/people'), clientApi<CursorPage<EncounterSummary>>('/encounters')])
+      .then(([nextPeople, page]) => { setPeople(nextPeople); setEncounters(page.items); })
+      .catch(() => undefined);
+  }, []);
   const recentEncounters = encounters.slice(0, 3);
   return <div className="page">
     <section className="hero">
@@ -44,7 +51,7 @@ export default async function HomePage() {
       </div>
     </section>
     <div className="section-intro"><div><span className="eyebrow">MY PEOPLE</span><h2 className="section-title">最近想起的人</h2></div><Link href="/friends" className="round-link">查看全部 <ArrowRight size={15}/></Link></div>
-    <div className="card-grid">{people.slice(0,3).map((person, index) => <Link className="friend-card" href={`/friends/${person.id}`} key={person.id}><PersonAvatar personId={person.id} name={person.nickname ?? person.displayName} src={personPhoto(person, index)} className={`friend-photo-${index + 1}`}/><div><strong>{person.nickname ?? person.displayName}</strong><small>一起记录了 {person.encounterCount} 次见面</small></div></Link>)}</div>
+    <div className="card-grid">{people.slice(0,3).map((person, index) => <Link className="friend-card" href={`/friends/view?person=${encodeURIComponent(person.id)}`} key={person.id}><PersonAvatar personId={person.id} name={person.nickname ?? person.displayName} src={personPhoto(person, index)} className={`friend-photo-${index + 1}`}/><div><strong>{person.nickname ?? person.displayName}</strong><small>一起记录了 {person.encounterCount} 次见面</small></div></Link>)}</div>
     <TogetherIdeas people={people} compact/>
     <div className="section-intro"><div><span className="eyebrow">RECENT LOGS</span><h2 className="section-title">最近的共同经历</h2></div><Link href="/encounters/new" className="button pink"><Camera size={17}/>倒入照片</Link></div>
     <div className="memory-list">{encounters.slice(0,3).map((encounter, index) => <MemoryCard encounter={encounter} index={index} key={encounter.id}/>)}</div>
@@ -53,13 +60,13 @@ export default async function HomePage() {
 
 function MemoryCard({ encounter, index }: { encounter: EncounterSummary; index: number }) {
   const date = new Date(encounter.startAt);
-  return <Link href={`/encounters/${encounter.id}`} className={`memory-card memory-photo-card memory-photo-${index + 1}`}><PhotoSlideshow photos={encounterPhotos(encounter, index)} interval={4800 + index * 700}/><div className="date-tile"><strong>{String(date.getDate()).padStart(2,'0')}</strong><span>{date.getFullYear()}.{String(date.getMonth()+1).padStart(2,'0')}</span></div><div><h3>{encounter.title}</h3><p>{encounter.story}</p></div><div className="memory-meta">{encounter.locationText}<br/>{encounter.photoCount} 张照片 · {encounter.participantCount} 人</div></Link>;
+  return <Link href={`/encounters/view?id=${encodeURIComponent(encounter.id)}`} className={`memory-card memory-photo-card memory-photo-${index + 1}`}><PhotoSlideshow photos={encounterPhotos(encounter, index)} interval={4800 + index * 700}/><div className="date-tile"><strong>{String(date.getDate()).padStart(2,'0')}</strong><span>{date.getFullYear()}.{String(date.getMonth()+1).padStart(2,'0')}</span></div><div><h3>{encounter.title}</h3><p>{encounter.story}</p></div><div className="memory-meta">{encounter.locationText}<br/>{encounter.photoCount} 张照片 · {encounter.participantCount} 人</div></Link>;
 }
 
 function HeroEncounter({ encounter, index }: { encounter: EncounterSummary; index: number }) {
   const date = new Date(encounter.startAt);
   const person = encounter.participantNames?.join('、') || (encounter.participantCount > 2 ? '我们' : '朋友');
-  return <Link href={`/encounters/${encounter.id}`} className={`moment-shot shot-${['one','two','three'][index]}`}>
+  return <Link href={`/encounters/view?id=${encodeURIComponent(encounter.id)}`} className={`moment-shot shot-${['one','two','three'][index]}`}>
     <PhotoSlideshow photos={encounterPhotos(encounter, index)} interval={3600 + index * 550}/>
     <span>{person}</span><strong>{date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}</strong><small>{encounter.title}</small>
   </Link>;

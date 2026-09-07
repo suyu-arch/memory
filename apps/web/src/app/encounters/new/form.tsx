@@ -4,6 +4,7 @@ import { Camera, LockKeyhole, LoaderCircle, Sparkles, UserRound, Users } from 'l
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { uploadEncounterPhotos } from '@/lib/upload';
+import { appPath, clientApi } from '@/lib/client-api';
 
 export function NewEncounterForm({ people }: { people: PersonSummary[] }) {
   const searchParams = useSearchParams();
@@ -13,7 +14,7 @@ export function NewEncounterForm({ people }: { people: PersonSummary[] }) {
   const [kind,setKind]=useState<'PERSONAL'|'MEETING'>(personId || searchParams.get('kind') === 'meeting' ? 'MEETING' : 'PERSONAL');
   const [selectedPersonId,setSelectedPersonId]=useState(personId ?? '');
   const [files,setFiles]=useState<File[]>([]); const [saving,setSaving]=useState(false); const [message,setMessage]=useState(''); const [progress,setProgress]=useState(0);
-  async function submit(formData: FormData){if(kind==='MEETING'&&!selectedPersonId){setMessage('先选择这次见面的朋友');return;}setSaving(true);setMessage('正在保存记录…');try{const response=await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000/v1'}/encounters`,{method:'POST',headers:{'content-type':'application/json','x-user-id':'demo-user','x-user-email':'demo@example.test','x-user-name':'小满'},body:JSON.stringify({kind,title:formData.get('title'),story:formData.get('story'),locationText:formData.get('location')||undefined,startAt:new Date(String(formData.get('startAt'))).toISOString(),participantPersonIds:kind==='MEETING'&&selectedPersonId?[selectedPersonId]:[],moments:[]})});if(!response.ok)throw new Error(await response.text());const result=await response.json();if(files.length){setMessage('照片正在断点分片上传…');await uploadEncounterPhotos(result.id,files,(uploaded,total)=>setProgress(Math.round(uploaded/total*100)));}location.href=`/encounters/${result.id}`;}catch(error){setMessage(error instanceof Error?error.message:'保存失败');setSaving(false)}}
+  async function submit(formData: FormData){if(kind==='MEETING'&&!selectedPersonId){setMessage('先选择这次见面的朋友');return;}setSaving(true);setMessage('正在保存记录…');try{const result=await clientApi<{id:string}>('/encounters',{method:'POST',body:JSON.stringify({kind,title:formData.get('title'),story:formData.get('story'),locationText:formData.get('location')||undefined,startAt:new Date(String(formData.get('startAt'))).toISOString(),participantPersonIds:kind==='MEETING'&&selectedPersonId?[selectedPersonId]:[],moments:[]})});if(files.length){setMessage('照片正在断点分片上传…');await uploadEncounterPhotos(result.id,files,(uploaded,total)=>setProgress(Math.round(uploaded/total*100)));}location.href=appPath(`/encounters/view/?id=${encodeURIComponent(result.id)}`);}catch(error){setMessage(error instanceof Error?error.message:'保存失败');setSaving(false)}}
   return <form className="form" action={submit}>
     <div className="record-kind-picker" aria-label="选择记录类型">
       <button className={kind==='PERSONAL'?'active':''} type="button" onClick={()=>setKind('PERSONAL')}><UserRound/><span><strong>我的经历</strong><small>只记录我自己的这一天</small></span></button>

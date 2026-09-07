@@ -2,6 +2,7 @@
 
 import { Camera } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { clientApi } from '@/lib/client-api';
 
 const avatarKey = (personId: string) => `memory:avatar:${personId}`;
 
@@ -35,11 +36,7 @@ export function PersonAvatar({ personId, name, src, editable = false, className 
     setCurrentSrc(nextSrc);
     window.dispatchEvent(new CustomEvent('memory-avatar-change', { detail: { personId, src: nextSrc } }));
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000/v1'}/people/${personId}`, {
-      method: 'PATCH',
-      headers: { 'content-type': 'application/json', 'x-user-id': 'demo-user', 'x-user-email': 'demo@example.test', 'x-user-name': '小满' },
-      body: JSON.stringify({ avatarUrl: nextSrc }),
-    }).catch(() => undefined);
+    clientApi(`/people/${personId}`, { method: 'PATCH', body: JSON.stringify({ avatarUrl: nextSrc }) }).catch(() => undefined);
   }
 
   const avatar = <span

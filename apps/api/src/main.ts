@@ -10,11 +10,17 @@ declare global {
 BigInt.prototype.toJSON = function toJSON() { return this.toString(); };
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const allowedOrigins = (process.env.WEB_ORIGIN ?? 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const app = await NestFactory.create(AppModule, {
+    cors: { origin: allowedOrigins, credentials: false },
+  });
   app.setGlobalPrefix('v1');
   app.enableShutdownHooks();
   process.once('SIGTERM', () => void shutdownTelemetry());
-  await app.listen(Number(process.env.API_PORT ?? 4000));
+  await app.listen(Number(process.env.PORT ?? process.env.API_PORT ?? 4000), '0.0.0.0');
 }
 
 void bootstrap();

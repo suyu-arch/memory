@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { PersonSummary, TogetherIdea, TogetherIdeaStatus } from '@togetherly/contracts';
 import { demoTogetherIdeas } from '@/lib/demo';
+import { clientApi } from '@/lib/client-api';
 import { personPhoto } from '@/lib/media';
 import { PersonAvatar } from './person-avatar';
 
@@ -42,8 +43,7 @@ export function TogetherIdeas({ people, personId, compact = false, board = false
     setReady(true);
 
     if (apiBase) {
-      fetch(`${apiBase}/together-ideas${personId ? `?personId=${personId}` : ''}`, { headers: authHeaders() })
-        .then((response) => response.ok ? response.json() as Promise<TogetherIdea[]> : Promise.reject())
+      clientApi<TogetherIdea[]>(`/together-ideas${personId ? `?personId=${personId}` : ''}`)
         .then((remoteIdeas) => { setIdeas(remoteIdeas); localStorage.setItem(storageKey, JSON.stringify(remoteIdeas)); })
         .catch(() => undefined);
     }
@@ -87,21 +87,20 @@ export function TogetherIdeas({ people, personId, compact = false, board = false
     setEditing(null);
 
     if (apiBase) {
-      const url = current ? `${apiBase}/together-ideas/${current.id}` : `${apiBase}/together-ideas`;
       const body = current ? { content: next.content, plannedAt: next.plannedAt, locationText: next.locationText, note: next.note } : { personId: next.personId, content: next.content, plannedAt: next.plannedAt ?? undefined, locationText: next.locationText ?? undefined, note: next.note ?? undefined };
-      fetch(url, { method: current ? 'PATCH' : 'POST', headers: authHeaders(true), body: JSON.stringify(body) }).catch(() => undefined);
+      clientApi(`/together-ideas${current ? `/${current.id}` : ''}`, { method: current ? 'PATCH' : 'POST', body: JSON.stringify(body) }).catch(() => undefined);
     }
   }
 
   function updateStatus(idea: TogetherIdea, status: TogetherIdeaStatus) {
     saveLocal(ideas.map((item) => item.id === idea.id ? { ...item, status, updatedAt: new Date().toISOString() } : item));
-    if (apiBase) fetch(`${apiBase}/together-ideas/${idea.id}`, { method: 'PATCH', headers: authHeaders(true), body: JSON.stringify({ status }) }).catch(() => undefined);
+    if (apiBase) clientApi(`/together-ideas/${idea.id}`, { method: 'PATCH', body: JSON.stringify({ status }) }).catch(() => undefined);
   }
 
   function removeIdea(idea: TogetherIdea) {
     if (!window.confirm(`删除“${idea.content}”吗？`)) return;
     saveLocal(ideas.filter((item) => item.id !== idea.id));
-    if (apiBase) fetch(`${apiBase}/together-ideas/${idea.id}`, { method: 'DELETE', headers: authHeaders() }).catch(() => undefined);
+    if (apiBase) clientApi(`/together-ideas/${idea.id}`, { method: 'DELETE' }).catch(() => undefined);
   }
 
   if (!ready) return <div className="ideas-loading">正在翻找你们的小念头…</div>;
@@ -132,7 +131,7 @@ export function TogetherIdeas({ people, personId, compact = false, board = false
       {visibleIdeas.slice(0, compact ? 3 : undefined).map((idea, index) => {
         const person = people.find((item) => item.id === idea.personId);
         return <article className={`idea-card idea-${idea.status.toLowerCase()}`} key={idea.id}>
-          <Link className="idea-card-link" href={`/together/${idea.personId}`} aria-label={`查看我和${idea.personName}的下次一起清单`}>
+          <Link className="idea-card-link" href={`/friends/view?person=${encodeURIComponent(idea.personId)}`} aria-label={`查看我和${idea.personName}的下次一起清单`}>
             {person ? <PersonAvatar personId={person.id} name={idea.personName} src={personPhoto(person, index)} className={`friend-photo-${index % 3 + 1}`}/> : <span className="idea-bulb"><Lightbulb size={21}/></span>}
             <div className="idea-copy">
               <div className="idea-meta"><span>{idea.personName}</span><small>{idea.proposedBy}提出 · {statusLabel(idea.status)}</small></div>
@@ -165,12 +164,6 @@ function IdeaForm({ draft, people, lockPerson, onChange, onCancel, onSubmit }: {
     </div>
     <details className="idea-more" open={Boolean(draft.plannedAt || draft.locationText || draft.note)}><summary><ChevronDown size={14}/>时间地点可以以后再说</summary><div className="idea-optional"><input aria-label="大概时间" type="datetime-local" value={draft.plannedAt} onChange={(event) => onChange({ ...draft, plannedAt: event.target.value })}/><input aria-label="大概地点" value={draft.locationText} onChange={(event) => onChange({ ...draft, locationText: event.target.value })} placeholder="大概地点（可选）"/><textarea aria-label="补充说明" value={draft.note} onChange={(event) => onChange({ ...draft, note: event.target.value })} placeholder="还有什么想补充的？（可选）"/></div></details>
   </form>;
-}
-
-function authHeaders(json = false) {
-  const headers: Record<string, string> = { 'x-user-id': 'demo-user', 'x-user-email': 'demo@example.test', 'x-user-name': '小满' };
-  if (json) headers['content-type'] = 'application/json';
-  return headers;
 }
 
 function formatPlanDate(value: string) {

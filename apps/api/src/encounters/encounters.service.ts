@@ -39,11 +39,30 @@ export class EncountersService {
   async list(userId: string, cursor?: string) {
     const rows = await this.prisma.encounter.findMany({
       where: { members: { some: { userId } } },
-      include: { _count: { select: { participants: true, assets: true } } },
+      include: {
+        _count: { select: { participants: true, assets: true } },
+        participants: { include: { person: true } },
+      },
       orderBy: [{ startAt: 'desc' }, { id: 'desc' }], take: 21,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     });
-    return { items: rows.slice(0, 20), nextCursor: rows.length > 20 ? rows[19]!.id : null };
+    return {
+      items: rows.slice(0, 20).map((row) => ({
+        id: row.id,
+        kind: row.kind,
+        title: row.title,
+        story: row.story,
+        locationText: row.locationText,
+        startAt: row.startAt.toISOString(),
+        endAt: row.endAt?.toISOString() ?? null,
+        version: row.version,
+        coverUrl: null,
+        participantCount: row._count.participants,
+        participantNames: row.participants.map(({ person }) => person.displayName),
+        photoCount: row._count.assets,
+      })),
+      nextCursor: rows.length > 20 ? rows[19]!.id : null,
+    };
   }
 
   async get(userId: string, encounterId: string) {

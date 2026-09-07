@@ -2,6 +2,7 @@
 
 import { Check, Copy, Mail, UserRoundCheck, X } from 'lucide-react';
 import { useState } from 'react';
+import { clientApi } from '@/lib/client-api';
 
 const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -22,13 +23,9 @@ export function InviteFriend({ personId, linked }: { personId: string; linked: b
       setMessage('演示邀请已生成；部署后端后会绑定到这位朋友。');
       return;
     }
-    const response = await fetch(`${apiBase}/invitations`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-user-id': 'demo-user', 'x-user-email': 'demo@example.test', 'x-user-name': '小满' },
-      body: JSON.stringify({ email: email.trim(), personId, role: 'EDITOR' }),
-    });
-    if (!response.ok) return setMessage('邀请暂时没有生成，请稍后再试。');
-    const result = await response.json() as { acceptUrl: string };
+    let result: { acceptUrl: string };
+    try { result = await clientApi('/invitations', { method: 'POST', body: JSON.stringify({ email: email.trim(), personId, role: 'EDITOR' }) }); }
+    catch { return setMessage('邀请暂时没有生成，请稍后再试。'); }
     setInviteUrl(`${location.origin}${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}${result.acceptUrl}`);
     setMessage('邀请链接已生成，有效期为 7 天。');
   }

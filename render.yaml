@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: memory-api
+    runtime: node
+    plan: free
+    region: singapore
+    healthCheckPath: /v1/health
+    buildCommand: >-
+      corepack enable && pnpm install --frozen-lockfile && pnpm db:generate &&
+      pnpm --filter @togetherly/api build && pnpm --filter @togetherly/worker build
+    startCommand: >-
+      pnpm --filter @togetherly/api exec prisma db push --skip-generate &&
+      pnpm --parallel --filter @togetherly/api --filter @togetherly/worker start
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_MODE
+        value: production
+      - key: WEB_ORIGIN
+        value: https://suyu-arch.github.io
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: VALKEY_URL
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        value: us-east-1
+      - key: S3_BUCKET
+        value: togetherly-private
+      - key: S3_FORCE_PATH_STYLE
+        value: "true"
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: CLOUD_VISION_ENABLED
+        value: "false"

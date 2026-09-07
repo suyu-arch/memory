@@ -1,20 +1,27 @@
+import { getSupabase } from './supabase';
+
 const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000/v1';
 const partSize = 5 * 1024 * 1024;
 
 type BatchAsset = { id: string };
 type UploadBatch = { assets: BatchAsset[] };
 
-function apiHeaders() {
-  return {
-    'content-type': 'application/json',
-    'x-user-id': 'demo-user',
-    'x-user-email': 'demo@example.test',
-    'x-user-name': '小满',
-  };
+async function apiHeaders() {
+  const headers = new Headers({ 'content-type': 'application/json' });
+  const session = (await getSupabase()?.auth.getSession())?.data.session;
+  if (session?.access_token) headers.set('authorization', `Bearer ${session.access_token}`);
+  else {
+    headers.set('x-user-id', 'demo-user');
+    headers.set('x-user-email', 'demo@example.test');
+    headers.set('x-user-name', '小满');
+  }
+  return headers;
 }
 
 async function json<T>(path: string, init: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBase}${path}`, { ...init, headers: { ...apiHeaders(), ...init.headers } });
+  const headers = await apiHeaders();
+  new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+  const response = await fetch(`${apiBase}${path}`, { ...init, headers });
   if (!response.ok) throw new Error(`上传失败 (${response.status}): ${await response.text()}`);
   return response.json() as Promise<T>;
 }

@@ -172,7 +172,13 @@ async function publish(userIds: string[], event: RealtimeEvent) {
 
 function parseRedisUrl(raw: string) {
   const url = new URL(raw);
-  return { host: url.hostname, port: Number(url.port || 6379), username: url.username || undefined, password: url.password || undefined };
+  return {
+    host: url.hostname,
+    port: Number(url.port || 6379),
+    username: url.username || undefined,
+    password: url.password || undefined,
+    tls: url.protocol === 'rediss:' ? {} : undefined,
+  };
 }
 
 async function shutdown() {
