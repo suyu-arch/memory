@@ -26,8 +26,6 @@ services:
         value: https://xmhazpmxbrhncxxmxzjn.supabase.co
       - key: SUPABASE_JWKS_URL
         value: https://xmhazpmxbrhncxxmxzjn.supabase.co/auth/v1/.well-known/jwks.json
-      - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false
       - key: VALKEY_URL
         sync: false
       - key: S3_ENDPOINT
