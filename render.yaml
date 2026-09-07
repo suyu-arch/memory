@@ -25,17 +25,17 @@ services:
       - key: DIRECT_URL
         sync: false
       - key: SUPABASE_URL
-        sync: false
+        value: https://xmhazpmxbrhncxxmxzjn.supabase.co
       - key: SUPABASE_JWKS_URL
-        sync: false
+        value: https://xmhazpmxbrhncxxmxzjn.supabase.co/auth/v1/.well-known/jwks.json
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: VALKEY_URL
         sync: false
       - key: S3_ENDPOINT
-        sync: false
+        value: https://xmhazpmxbrhncxxmxzjn.storage.supabase.co/storage/v1/s3
       - key: S3_REGION
-        value: us-east-1
+        sync: false
       - key: S3_BUCKET
         value: togetherly-private
       - key: S3_FORCE_PATH_STYLE
