@@ -7,7 +7,7 @@ services:
     healthCheckPath: /v1/health
     buildCommand: >-
       corepack enable && pnpm install --frozen-lockfile && pnpm db:generate &&
-      pnpm --filter @togetherly/api build && pnpm --filter @togetherly/worker build
+      pnpm turbo run build --filter=@togetherly/api --filter=@togetherly/worker
     startCommand: >-
       pnpm --filter @togetherly/api exec prisma db push --skip-generate &&
       pnpm --parallel --filter @togetherly/api --filter @togetherly/worker start
