@@ -1,37 +1,46 @@
 'use client';
-import { createClient } from '@supabase/supabase-js';
-import { useState } from 'react';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { useEffect, useState } from 'react';
+import { getSupabase } from '@/lib/supabase';
 
 export function InvitationAccept({ token }: { token: string }) {
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
   const [sent, setSent] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [state, setState] = useState('');
+
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    void supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => setSignedIn(Boolean(session)));
+    return () => data.subscription.unsubscribe();
+  }, []);
 
   async function sendCode() {
     if (!email.trim()) return setState('请先填写收到邀请的邮箱');
-    if (!supabaseUrl || !supabaseKey) {
+    const supabase = getSupabase();
+    if (!supabase) {
       setSent(true);
       return setState('本地开发模式：可直接接受邀请');
     }
-    setState('正在发送验证码…');
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } });
+    setState('正在发送登录链接…');
+    const emailRedirectTo = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { shouldCreateUser: true, emailRedirectTo },
+    });
     if (error) return setState(`发送失败：${error.message}`);
     setSent(true);
-    setState('验证码已发送，请检查邮箱');
+    setState('登录链接已发送，请打开邮件并点击链接');
   }
 
   async function accept() {
-    setState('正在验证并接受邀请…');
+    setState('正在接受邀请…');
     const headers: Record<string, string> = {};
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data, error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'email' });
-      if (error || !data.session) return setState(`验证失败：${error?.message ?? '没有登录会话'}`);
+    const supabase = getSupabase();
+    if (supabase) {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) return setState('请先通过邮件中的链接登录');
       headers.authorization = `Bearer ${data.session.access_token}`;
     } else {
       headers['x-user-id'] = `dev-${email.trim().toLowerCase()}`;
@@ -45,10 +54,12 @@ export function InvitationAccept({ token }: { token: string }) {
   }
 
   return <div className="form" style={{ textAlign: 'left', marginTop: 24 }}>
-    <div className="field"><label>收到邀请的邮箱</label><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></div>
-    {!sent
-      ? <button className="button orange" onClick={sendCode}>发送邮箱验证码</button>
-      : <><div className="field"><label>邮箱验证码</label><input inputMode="numeric" value={code} onChange={(event) => setCode(event.target.value)} placeholder="本地开发可留空" /></div><button className="button orange" onClick={accept}>验证并接受邀请</button></>}
+    {!signedIn && <div className="field"><label>收到邀请的邮箱</label><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></div>}
+    {signedIn
+      ? <button className="button orange" onClick={accept}>接受邀请</button>
+      : !sent
+        ? <button className="button orange" onClick={sendCode}>发送邮箱登录链接</button>
+        : <button className="button secondary" onClick={() => setSent(false)}>换一个邮箱</button>}
     {state && <p className="subtle">{state}</p>}
   </div>;
 }
